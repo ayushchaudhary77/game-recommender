@@ -20,6 +20,11 @@ def home():
     steam_id = session.get("steam_id")
     return render_template("index.html", steam_id=steam_id)
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
 
 @app.route("/login")
 def login():

@@ -504,7 +504,7 @@
 </div>
 
 <script>
-  const hasSteam = "{{ steam_id }}" !== "";
+  const hasSteam = {{ 'true' if steam_id else 'false' }};
 
 
   function showScreen(id) {

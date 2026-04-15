@@ -28,16 +28,17 @@ def logout():
 
 @app.route("/login")
 def login():
+    base_url = request.host_url.rstrip("/")
+
     return redirect(
         "https://steamcommunity.com/openid/login"
-        "?openid.ns=http://specs.openid.net/auth/2.0"
-        "&openid.mode=checkid_setup"
-        "&openid.return_to=http://localhost:5000/auth"
-        "&openid.realm=http://localhost:5000"
-        "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
-        "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
+        f"?openid.ns=http://specs.openid.net/auth/2.0"
+        f"&openid.mode=checkid_setup"
+        f"&openid.return_to={base_url}/auth"
+        f"&openid.realm={base_url}"
+        f"&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
+        f"&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
     )
-
 @app.route("/auth")
 def auth():
     steam_id = request.args.get("openid.claimed_id").split("/")[-1]

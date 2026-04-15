@@ -91,7 +91,7 @@ def recommend_for_steam_user(steam_games, top_n=5):
     user_vector = build_user_vector_from_steam(steam_games)
     rated_items = np.where(user_vector > 0)[0]
     print(f"Matched {len(rated_items)} games")
-    if len(rated_items) < 2:
+    if len(rated_items) < 1:
         print("Cold start triggered — returning popular games")
         return get_popular_steam_games(top_n)
 

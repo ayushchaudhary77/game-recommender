@@ -16,9 +16,8 @@ def normalize(name):
     name = re.sub(r'\s+', ' ', name).strip()         # collapse spaces
     return name
 
-df = pd.read_csv("hybrid_training_dataset.csv")
-print(df.head())
-print(df.info())
+#df = pd.read_csv("hybrid_training_dataset.csv")
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 csv_path = os.path.join(BASE_DIR, "hybrid_training_dataset.csv")

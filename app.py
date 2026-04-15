@@ -17,8 +17,7 @@ app.config["SECRET_KEY"] = "steam-recommender-secret-key"
 
 @app.route("/")
 def home():
-    steam_id = session.get("steam_id")
-    return render_template("index.html", steam_id=steam_id)
+    return redirect("/app")
 
 @app.route("/login")
 def login():

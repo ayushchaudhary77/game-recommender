@@ -7,6 +7,7 @@ import pandas as pd
 import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 import requests
+import os
 
 def normalize(name):
     name = name.lower().strip()
@@ -18,6 +19,11 @@ def normalize(name):
 df = pd.read_csv("hybrid_training_dataset.csv")
 print(df.head())
 print(df.info())
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+csv_path = os.path.join(BASE_DIR, "hybrid_training_dataset.csv")
+
+df = pd.read_csv(csv_path)
 
 df_content = df[['game_title', 'combined_tags']].drop_duplicates('game_title').copy()
 df_content['combined_tags'] = df_content['combined_tags'].fillna('').astype(str)

@@ -5,11 +5,14 @@ from flask import redirect, request, session
 import os
 STEAM_API_KEY = "5C7745FC550805A4DF119BF09307FE6F"
 
+from flask import Flask
 
+app = Flask(__name__)
 
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "steam-recommender-secret-key"
+
 
 
 @app.route("/")
@@ -144,3 +147,5 @@ def recommend(user_id):
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)
+
+app = Flask(__name__)

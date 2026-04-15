@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GameMatch — Steam Recommender</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --border: rgba(255,255,255,0.07);
+    --accent: #5b8cff;
+    --accent2: #a78bfa;
+    --text: #f0f0f5;
+    --muted: #7a7a90;
+    --card-bg: #16161f;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(91,140,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(91,140,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── GLOW BLOBS ── */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.18;
+  }
+  .blob1 { width: 600px; height: 600px; background: #3b5bff; top: -200px; left: -200px; }
+  .blob2 { width: 500px; height: 500px; background: #7c3aed; bottom: -150px; right: -150px; }
+
+  /* ── LAYOUT ── */
+  .screen {
+    position: relative;
+    z-index: 1;
+    display: none;
+    min-height: 100vh;
+  }
+  .screen.active { display: flex; }
+
+  /* ══════════════════════════════
+     WELCOME SCREEN
+  ══════════════════════════════ */
+  #welcome {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    gap: 0;
+  }
+
+  .logo-mark {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    animation: float 4s ease-in-out infinite;
+  }
+  .logo-mark svg { width: 32px; height: 32px; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .tagline {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.25rem;
+    background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .sub {
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 420px;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+    animation: fadeUp 0.7s 0.15s ease both;
+  }
+
+  .steam-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--accent), #3b6fd4);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 40px rgba(91,140,255,0.3);
+    animation: fadeUp 0.7s 0.3s ease both;
+  }
+  .steam-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 60px rgba(91,140,255,0.45);
+  }
+  .steam-btn:active { transform: translateY(0); }
+
+  .steam-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
+
+  .features {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 4rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.7s 0.45s ease both;
+  }
+  .feat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .feat-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.7;
+  }
+
+  /* ══════════════════════════════
+     LOADING SCREEN
+  ══════════════════════════════ */
+  #loading {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  .loader-ring {
+    width: 72px;
+    height: 72px;
+    position: relative;
+  }
+  .loader-ring svg {
+    width: 100%;
+    height: 100%;
+    animation: spin 1.4s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loader-ring circle {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+  .loader-ring .track { stroke: var(--surface2); }
+  .loader-ring .fill {
+    stroke: var(--accent);
+    stroke-dasharray: 160;
+    stroke-dashoffset: 40;
+  }
+
+  .loading-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .loading-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+  .step.done { color: var(--text); }
+  .step.active { color: var(--accent); }
+
+  .step-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .step.done .step-icon {
+    background: rgba(91,140,255,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .step.active .step-icon {
+    background: rgba(91,140,255,0.1);
+    border-color: var(--accent);
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(91,140,255,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(91,140,255,0); }
+  }
+
+  /* ══════════════════════════════
+     RESULTS SCREEN
+  ══════════════════════════════ */
+  #results {
+    flex-direction: column;
+    padding: 3rem 2rem;
+    max-width: 680px;
+    margin: 0 auto;
+    width: 100%;
+    gap: 2rem;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .results-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .results-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+
+  .results-header h1 span {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .steam-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .steam-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 6px #4ade80;
+  }
+
+  /* Game cards */
+  .game-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .game-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.1rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    animation: fadeUp 0.5s ease both;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+  .game-card:hover {
+    border-color: rgba(91,140,255,0.3);
+    transform: translateX(4px);
+  }
+
+  .rank {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--surface2);
+    min-width: 32px;
+    text-align: center;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+  .game-card:nth-child(1) .rank { color: #5b8cff; }
+  .game-card:nth-child(2) .rank { color: #a78bfa; }
+  .game-card:nth-child(3) .rank { color: #60a5fa; }
+  .game-card:nth-child(4) .rank { color: #34d399; }
+  .game-card:nth-child(5) .rank { color: #f472b6; }
+
+  .game-info { flex: 1; min-width: 0; }
+  .game-name {
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+  .game-score-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .score-bar-wrap {
+    width: 100px;
+    flex-shrink: 0;
+  }
+  .score-bar-bg {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .score-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    width: 0;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .score-val {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .refresh-btn {
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ── ERROR ── */
+  .error-box {
+    background: rgba(226,75,74,0.08);
+    border: 1px solid rgba(226,75,74,0.25);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
+    color: #f87171;
+    display: none;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<!-- ══ WELCOME ══ -->
+<div class="screen {% if not steam_id %}active{% endif %}" id="welcome">
+  <div class="logo-mark">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 24L12 10L18 20L22 14L26 24" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="12" cy="10" r="2" fill="white"/>
+    </svg>
+  </div>
+
+  <h1 class="tagline">Games you'll<br/>actually love.</h1>
+  <p class="sub">Connect your Steam library and get personalized recommendations powered by collaborative filtering.</p>
+
+  <a href="/login" class="steam-btn">
+    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.007l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.711L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0z"/>
+    </svg>
+    Sign in with Steam
+  </a>
+
+  <div class="features">
+    <div class="feat"><div class="feat-dot"></div>Collaborative filtering</div>
+    <div class="feat"><div class="feat-dot"></div>Content-based matching</div>
+    <div class="feat"><div class="feat-dot"></div>Playtime-weighted</div>
+  </div>
+</div>
+
+<!-- ══ LOADING ══ -->
+<div class="screen {% if steam_id %}active{% endif %}" id="loading">
+  <div class="loader-ring">
+    <svg viewBox="0 0 72 72">
+      <circle class="track" cx="36" cy="36" r="30"/>
+      <circle class="fill" cx="36" cy="36" r="30"/>
+    </svg>
+  </div>
+
+  <div class="loading-title">Finding your matches</div>
+
+  <div class="loading-steps">
+    <div class="step active" id="step1">
+      <div class="step-icon">1</div>
+      <span>Fetching Steam library</span>
+    </div>
+    <div class="step" id="step2">
+      <div class="step-icon">2</div>
+      <span>Matching to dataset</span>
+    </div>
+    <div class="step" id="step3">
+      <div class="step-icon">3</div>
+      <span>Running recommender</span>
+    </div>
+  </div>
+
+  <div class="error-box" id="error-box"></div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div class="screen" id="results">
+  <div class="results-header">
+    <h1>Your<br/><span>top picks</span></h1>
+    {% if steam_id %}
+    <div class="steam-badge">
+      <div class="dot"></div>
+      Steam connected
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="game-list" id="game-list"></div>
+  <div class="error-box" id="results-error"></div>
+
+  <button class="refresh-btn" onclick="location.reload()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </svg>
+    Refresh
+  </button>
+</div>
+
+<script>
+  const hasSteam = "{{ steam_id }}" !== "";
+
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function setStep(n) {
+    for (let i = 1; i <= 3; i++) {
+      const el = document.getElementById('step' + i);
+      el.classList.remove('active', 'done');
+      if (i < n) el.classList.add('done'), el.querySelector('.step-icon').textContent = '✓';
+      else if (i === n) el.classList.add('active');
+    }
+  }
+
+  function showError(msg) {
+    const box = document.getElementById('error-box');
+    box.textContent = msg;
+    box.style.display = 'block';
+  }
+
+  function renderResults(recs) {
+      const isColdStart = recs.some(r => r.cold_start);
+      if (isColdStart) {
+          document.querySelector('.results-header h1').innerHTML = 
+              'Hello New_User! Since your account is new and you have not played any games yet, here are some<br/>Trending games on<br/><span>Steam right now</span>';}
+    showScreen('results');
+    const list = document.getElementById('game-list');
+    const maxScore = Math.max(...recs.map(r => r.score));
+
+    recs.forEach((rec, i) => {
+      const pct = maxScore > 0 ? (rec.score / maxScore) * 100 : 0;
+      const card = document.createElement('div');
+      card.className = 'game-card';
+      card.style.animationDelay = (i * 0.08) + 's';
+      card.innerHTML = `
+        <div class="rank">${String(i + 1).padStart(2, '0')}</div>
+        <div class="game-info">
+          <div class="game-name">${rec.game}</div>
+          <div class="game-score-label">Match score</div>
+        </div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-bg"><div class="score-bar-fill" data-pct="${pct}"></div></div>
+          <div class="score-val">${rec.score.toFixed(2)}</div>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+
+    // animate bars after paint
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.querySelectorAll('.score-bar-fill').forEach(bar => {
+        bar.style.width = bar.dataset.pct + '%';
+      });
+    }));
+  }
+
+  async function fetchRecs() {
+    if (!hasSteam) return;
+    setStep(1);
+    await new Promise(r => setTimeout(r, 400));
+    setStep(2);
+    await new Promise(r => setTimeout(r, 400));
+    setStep(3);
+
+    try {
+        const res = await fetch('/steam-recommend');
+        const text = await res.text();
+        console.log("Raw response:", text);  // 👈 open F12 console to see this
+        const data = JSON.parse(text);
+        if (!res.ok) {
+            showError(data.error || 'Something went wrong.');
+            return;
+        }
+        renderResults(data.recommendations);
+    } catch (e) {
+        showError('Error: ' + e.message);
+        console.error("Full error:", e);
+    }
+}
+
+  if (hasSteam) {
+    showScreen('loading');
+    fetchRecs();
+  }
+</script>
+</body>
+</html>

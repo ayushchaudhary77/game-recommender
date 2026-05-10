@@ -6,4 +6,4 @@ scipy
 scikit-learn
 gunicorn
 python-dotenv
-anthropic
+anthropic>=0.52.0

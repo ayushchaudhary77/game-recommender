@@ -33,6 +33,7 @@ def login():
         f"&openid.realm={base_url}"
         "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
         "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
+    )
 
 @app.route("/auth")
 def auth():

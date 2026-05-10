@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, render_template
-from recommender import get_recommendations, recommend_for_steam_user, get_popular_steam_games
-import requests
+from recommender import get_recommendations, recommend_for_steam_user, get_popular_steam_games, nl_search
 from flask import redirect, request, session
 import os
+import requests
 STEAM_API_KEY = "5C7745FC550805A4DF119BF09307FE6F"
 
 from flask import Flask
@@ -17,7 +17,9 @@ app.config["SECRET_KEY"] = "steam-recommender-secret-key"
 
 @app.route("/")
 def home():
-    return redirect("/app")
+    steam_id = session.get("steam_id")
+    return render_template("index.html", steam_id=steam_id)
+
 
 @app.route("/login")
 def login():
@@ -38,6 +40,14 @@ def auth():
     print("Logged in Steam ID:", steam_id)
     return redirect("/app")
 
+@app.route("/search", methods=["POST"])
+def natural_language_search():
+    query = request.json.get("query")
+    if not query:
+        return jsonify({"error": "No query provided"}), 400
+    
+    results = nl_search(query)
+    return jsonify({"recommendations": results})
 
 
 def get_steam_games(steam_id):

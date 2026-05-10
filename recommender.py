@@ -8,6 +8,10 @@ import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 import requests
 import os
+import anthropic 
+from dotenv import load_dotenv
+load_dotenv()
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 def normalize(name):
     name = name.lower().strip()
@@ -92,7 +96,7 @@ def recommend_for_steam_user(steam_games, top_n=5):
     user_vector = build_user_vector_from_steam(steam_games)
     rated_items = np.where(user_vector > 0)[0]
     print(f"Matched {len(rated_items)} games")
-    if len(rated_items) < 2:
+    if len(rated_items) < 1:
         print("Cold start triggered — returning popular games")
         return get_popular_steam_games(top_n)
 
@@ -139,6 +143,7 @@ def recommend_for_steam_user(steam_games, top_n=5):
         {"game": idx_to_game[i], "score": round(float(final_scores[i]), 4)}
         for i in top_idx
     ]
+
 def predict_rating(uidx, iidx, train_item_sim, train_matrix):
     user_row = train_matrix.getrow(uidx).toarray().flatten()
 
@@ -280,6 +285,24 @@ def build_user_vector_from_steam(steam_games):
 
     return user_vector
 
+def generate_explanation(recommended_game, matched_games, top_tags):
+    try:
+        prompt = f"""
+        A user who plays {', '.join(matched_games)} was recommended '{recommended_game}'.
+        Shared gameplay tags: {', '.join(top_tags)}.
+        Write ONE friendly sentence under 20 words explaining why this game was recommended.
+        Return only the sentence, nothing else.
+        """
+        message = client.messages.create(
+            model="claude-sonnet-4-5",
+            max_tokens=60,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return message.content[0].text.strip()
+    except Exception as e:
+        print(f"Explanation error: {e}")
+        return ""
+
 def get_popular_steam_games(top_n=5):
     print("Fetching popular games from Steam...")
     url = "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/"
@@ -306,6 +329,37 @@ def get_popular_steam_games(top_n=5):
 
     print(f"Fetched {len(popular)} popular games")
     return popular
+
+
+def nl_search(query, top_n=5):
+    prompt = f"""
+    Convert this game preference description into relevant gaming tags.
+    Description: '{query}'
+    Return only tags as comma separated values from this list only:
+    fps, rpg, horror, co_op, multiplayer, survival, open_world, puzzle, 
+    action, tactical, singleplayer, adventure, simulation, strategy, 
+    racing, sports, roguelike, sandbox, shooter, stealth
+    Return nothing else — no explanation, no punctuation, just the tags.
+    """
+    
+    message = client.messages.create(
+        model="claude-sonnet-4-5",
+        max_tokens=50,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    tags = message.content[0].text.strip()
+    print(f"NL query: '{query}' → tags: {tags}")
+    
+    query_vec = tfidf.transform([tags])
+    scores = cosine_similarity(query_vec, tfidf_matrix).flatten()
+    top_idx = np.argsort(scores)[-top_n:][::-1]
+    
+    return [
+        {"game": content_idx_to_game[i], "score": round(float(scores[i]), 4)}
+        for i in top_idx
+    ]
+
 
 rmse = np.sqrt(np.mean(errors))
 print("📉 RMSE:", rmse)

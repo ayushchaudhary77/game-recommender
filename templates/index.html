@@ -28,7 +28,6 @@
     overflow-x: hidden;
   }
 
-  /* ── GRID BACKGROUND ── */
   body::before {
     content: '';
     position: fixed;
@@ -41,7 +40,6 @@
     z-index: 0;
   }
 
-  /* ── GLOW BLOBS ── */
   .blob {
     position: fixed;
     border-radius: 50%;
@@ -53,7 +51,6 @@
   .blob1 { width: 600px; height: 600px; background: #3b5bff; top: -200px; left: -200px; }
   .blob2 { width: 500px; height: 500px; background: #7c3aed; bottom: -150px; right: -150px; }
 
-  /* ── LAYOUT ── */
   .screen {
     position: relative;
     z-index: 1;
@@ -62,9 +59,7 @@
   }
   .screen.active { display: flex; }
 
-  /* ══════════════════════════════
-     WELCOME SCREEN
-  ══════════════════════════════ */
+  /* ── WELCOME ── */
   #welcome {
     flex-direction: column;
     align-items: center;
@@ -75,13 +70,10 @@
   }
 
   .logo-mark {
-    width: 64px;
-    height: 64px;
+    width: 64px; height: 64px;
     border-radius: 18px;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     margin: 0 auto 2rem;
     animation: float 4s ease-in-out infinite;
   }
@@ -133,12 +125,8 @@
     box-shadow: 0 0 40px rgba(91,140,255,0.3);
     animation: fadeUp 0.7s 0.3s ease both;
   }
-  .steam-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 60px rgba(91,140,255,0.45);
-  }
+  .steam-btn:hover { transform: translateY(-2px); box-shadow: 0 0 60px rgba(91,140,255,0.45); }
   .steam-btn:active { transform: translateY(0); }
-
   .steam-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
 
   .features {
@@ -149,23 +137,10 @@
     justify-content: center;
     animation: fadeUp 0.7s 0.45s ease both;
   }
-  .feat {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-  .feat-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    opacity: 0.7;
-  }
+  .feat { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); }
+  .feat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.7; }
 
-  /* ══════════════════════════════
-     LOADING SCREEN
-  ══════════════════════════════ */
+  /* ── LOADING ── */
   #loading {
     flex-direction: column;
     align-items: center;
@@ -174,29 +149,12 @@
     padding: 2rem;
   }
 
-  .loader-ring {
-    width: 72px;
-    height: 72px;
-    position: relative;
-  }
-  .loader-ring svg {
-    width: 100%;
-    height: 100%;
-    animation: spin 1.4s linear infinite;
-  }
+  .loader-ring { width: 72px; height: 72px; position: relative; }
+  .loader-ring svg { width: 100%; height: 100%; animation: spin 1.4s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  .loader-ring circle {
-    fill: none;
-    stroke-width: 3;
-    stroke-linecap: round;
-  }
+  .loader-ring circle { fill: none; stroke-width: 3; stroke-linecap: round; }
   .loader-ring .track { stroke: var(--surface2); }
-  .loader-ring .fill {
-    stroke: var(--accent);
-    stroke-dasharray: 160;
-    stroke-dashoffset: 40;
-  }
+  .loader-ring .fill { stroke: var(--accent); stroke-dasharray: 160; stroke-dashoffset: 40; }
 
   .loading-title {
     font-family: 'Syne', sans-serif;
@@ -205,56 +163,31 @@
     letter-spacing: -0.02em;
   }
 
-  .loading-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    max-width: 320px;
-  }
+  .loading-steps { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px; }
 
-  .step {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.9rem;
-    color: var(--muted);
-    transition: color 0.3s;
-  }
+  .step { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; color: var(--muted); transition: color 0.3s; }
   .step.done { color: var(--text); }
   .step.active { color: var(--accent); }
 
   .step-icon {
-    width: 28px;
-    height: 28px;
+    width: 28px; height: 28px;
     border-radius: 50%;
     background: var(--surface2);
     border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     font-size: 11px;
     transition: background 0.3s, border-color 0.3s;
   }
-  .step.done .step-icon {
-    background: rgba(91,140,255,0.15);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .step.active .step-icon {
-    background: rgba(91,140,255,0.1);
-    border-color: var(--accent);
-    animation: pulse 1s ease-in-out infinite;
-  }
+  .step.done .step-icon { background: rgba(91,140,255,0.15); border-color: var(--accent); color: var(--accent); }
+  .step.active .step-icon { background: rgba(91,140,255,0.1); border-color: var(--accent); animation: pulse 1s ease-in-out infinite; }
+
   @keyframes pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(91,140,255,0.4); }
     50% { box-shadow: 0 0 0 6px rgba(91,140,255,0); }
   }
 
-  /* ══════════════════════════════
-     RESULTS SCREEN
-  ══════════════════════════════ */
+  /* ── RESULTS ── */
   #results {
     flex-direction: column;
     padding: 3rem 2rem;
@@ -289,9 +222,7 @@
   }
 
   .steam-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
     padding: 6px 14px;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -307,29 +238,19 @@
     box-shadow: 0 0 6px #4ade80;
   }
 
-  /* Game cards */
-  .game-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+  .game-list { display: flex; flex-direction: column; gap: 12px; }
 
   .game-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 16px;
     padding: 1.1rem 1.4rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    display: flex; align-items: center; gap: 1rem;
     animation: fadeUp 0.5s ease both;
     transition: border-color 0.2s, transform 0.2s;
     cursor: default;
   }
-  .game-card:hover {
-    border-color: rgba(91,140,255,0.3);
-    transform: translateX(4px);
-  }
+  .game-card:hover { border-color: rgba(91,140,255,0.3); transform: translateX(4px); }
 
   .rank {
     font-family: 'Syne', sans-serif;
@@ -349,29 +270,14 @@
 
   .game-info { flex: 1; min-width: 0; }
   .game-name {
-    font-size: 1rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 1rem; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     margin-bottom: 3px;
   }
-  .game-score-label {
-    font-size: 0.78rem;
-    color: var(--muted);
-  }
+  .game-score-label { font-size: 0.78rem; color: var(--muted); }
 
-  .score-bar-wrap {
-    width: 100px;
-    flex-shrink: 0;
-  }
-  .score-bar-bg {
-    height: 4px;
-    background: var(--surface2);
-    border-radius: 99px;
-    overflow: hidden;
-    margin-bottom: 4px;
-  }
+  .score-bar-wrap { width: 100px; flex-shrink: 0; }
+  .score-bar-bg { height: 4px; background: var(--surface2); border-radius: 99px; overflow: hidden; margin-bottom: 4px; }
   .score-bar-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
@@ -379,17 +285,11 @@
     width: 0;
     transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .score-val {
-    font-size: 0.78rem;
-    color: var(--muted);
-    text-align: right;
-  }
+  .score-val { font-size: 0.78rem; color: var(--muted); text-align: right; }
 
   .refresh-btn {
     align-self: center;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    display: inline-flex; align-items: center; gap: 8px;
     padding: 10px 22px;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -402,7 +302,6 @@
   }
   .refresh-btn:hover { border-color: var(--accent); color: var(--text); }
 
-  /* ── ERROR ── */
   .error-box {
     background: rgba(226,75,74,0.08);
     border: 1px solid rgba(226,75,74,0.25);
@@ -416,6 +315,68 @@
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── NL SEARCH ── */
+  .nl-search-section {
+    margin-top: 0.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .nl-prompt {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .nl-prompt span {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .nl-input-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .nl-input {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .nl-input:focus { border-color: var(--accent); }
+  .nl-input::placeholder { color: var(--muted); }
+
+  .nl-btn {
+    padding: 12px 22px;
+    background: linear-gradient(135deg, var(--accent), #3b6fd4);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+  }
+  .nl-btn:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(91,140,255,0.3); }
+  .nl-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .nl-loading {
+    font-size: 0.82rem;
+    color: var(--accent);
+    margin-top: 10px;
+    display: none;
   }
 </style>
 </head>
@@ -432,17 +393,14 @@
       <circle cx="12" cy="10" r="2" fill="white"/>
     </svg>
   </div>
-
   <h1 class="tagline">Games you'll<br/>actually love.</h1>
   <p class="sub">Connect your Steam library and get personalized recommendations powered by collaborative filtering.</p>
-
   <a href="/login" class="steam-btn">
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.007l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.711L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0z"/>
     </svg>
     Sign in with Steam
   </a>
-
   <div class="features">
     <div class="feat"><div class="feat-dot"></div>Collaborative filtering</div>
     <div class="feat"><div class="feat-dot"></div>Content-based matching</div>
@@ -458,9 +416,7 @@
       <circle class="fill" cx="36" cy="36" r="30"/>
     </svg>
   </div>
-
   <div class="loading-title">Finding your matches</div>
-
   <div class="loading-steps">
     <div class="step active" id="step1">
       <div class="step-icon">1</div>
@@ -475,7 +431,6 @@
       <span>Running recommender</span>
     </div>
   </div>
-
   <div class="error-box" id="error-box"></div>
 </div>
 
@@ -494,6 +449,25 @@
   <div class="game-list" id="game-list"></div>
   <div class="error-box" id="results-error"></div>
 
+  <!-- ══ NL SEARCH ══ -->
+  <div class="nl-search-section">
+    <p class="nl-prompt">
+      Not the games you wanna play?
+      <span>Just tell us what type of games you're looking for</span>
+      and we'll give you the recommendations.
+    </p>
+    <div class="nl-input-row">
+      <input
+        class="nl-input"
+        id="nl-input"
+        type="text"
+        placeholder="e.g. a scary game I can play with friends online..."
+      />
+      <button class="nl-btn" id="nl-btn" onclick="doNLSearch()">Find Games</button>
+    </div>
+    <div class="nl-loading" id="nl-loading">Finding games for you...</div>
+  </div>
+
   <button class="refresh-btn" onclick="location.reload()">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
@@ -504,8 +478,7 @@
 </div>
 
 <script>
-  const hasSteam = "{{ steam_id }}" !== "";
-
+  const hasSteam = {{ 'true' if steam_id else 'false' }};
 
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -528,10 +501,11 @@
   }
 
   function renderResults(recs) {
-      const isColdStart = recs.some(r => r.cold_start);
-      if (isColdStart) {
-          document.querySelector('.results-header h1').innerHTML = 
-              'Hello New_User! Since your account is new and you have not played any games yet, here are some<br/>Trending games on<br/><span>Steam right now</span>';}
+    const isColdStart = recs.some(r => r.cold_start);
+    if (isColdStart) {
+      document.querySelector('.results-header h1').innerHTML =
+        'Hello New User!<br/>Trending games on<br/><span>Steam right now</span>';
+    }
     showScreen('results');
     const list = document.getElementById('game-list');
     const maxScore = Math.max(...recs.map(r => r.score));
@@ -555,13 +529,63 @@
       list.appendChild(card);
     });
 
-    // animate bars after paint
     requestAnimationFrame(() => requestAnimationFrame(() => {
       document.querySelectorAll('.score-bar-fill').forEach(bar => {
         bar.style.width = bar.dataset.pct + '%';
       });
     }));
   }
+
+  async function doNLSearch() {
+    const input = document.getElementById('nl-input');
+    const btn = document.getElementById('nl-btn');
+    const loading = document.getElementById('nl-loading');
+    const query = input.value.trim();
+
+    if (!query) return;
+
+    // Show loading state
+    btn.disabled = true;
+    btn.textContent = 'Searching...';
+    loading.style.display = 'block';
+
+    try {
+        const res = await fetch('/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            showError(data.error || 'Search failed.');
+            return;
+        }
+
+        // Clear current game list and render new results
+        document.getElementById('game-list').innerHTML = '';
+        document.querySelector('.results-header h1').innerHTML = 
+            'Results for<br/><span>"' + query + '"</span>';
+        renderResults(data.recommendations);
+
+    } catch (e) {
+        showError('Search failed. Please try again.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Find Games';
+        loading.style.display = 'none';
+    }
+}
+
+// Also allow pressing Enter to search
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('nl-input');
+    if (input) {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') doNLSearch();
+        });
+    }
+});
 
   async function fetchRecs() {
     if (!hasSteam) return;
@@ -572,20 +596,68 @@
     setStep(3);
 
     try {
-        const res = await fetch('/steam-recommend');
-        const text = await res.text();
-        console.log("Raw response:", text);  // 👈 open F12 console to see this
-        const data = JSON.parse(text);
-        if (!res.ok) {
-            showError(data.error || 'Something went wrong.');
-            return;
-        }
-        renderResults(data.recommendations);
+      const res = await fetch('/steam-recommend');
+      const text = await res.text();
+      console.log("Raw response:", text);
+      const data = JSON.parse(text);
+      if (!res.ok) {
+        showError(data.error || 'Something went wrong.');
+        return;
+      }
+      renderResults(data.recommendations);
     } catch (e) {
-        showError('Error: ' + e.message);
-        console.error("Full error:", e);
+      showError('Error: ' + e.message);
+      console.error("Full error:", e);
     }
-}
+  }
+
+  async function doNLSearch() {
+    const input = document.getElementById('nl-input');
+    const btn = document.getElementById('nl-btn');
+    const loading = document.getElementById('nl-loading');
+    const query = input.value.trim();
+
+    if (!query) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Searching...';
+    loading.style.display = 'block';
+
+    try {
+      const res = await fetch('/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || 'Search failed.');
+        return;
+      }
+
+      document.getElementById('game-list').innerHTML = '';
+      document.querySelector('.results-header h1').innerHTML =
+        'Results for<br/><span>"' + query + '"</span>';
+      renderResults(data.recommendations);
+
+    } catch (e) {
+      showError('Search failed. Please try again.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Find Games';
+      loading.style.display = 'none';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('nl-input');
+    if (input) {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') doNLSearch();
+      });
+    }
+  });
 
   if (hasSteam) {
     showScreen('loading');

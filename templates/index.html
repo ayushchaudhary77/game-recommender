@@ -51,6 +51,15 @@
   .blob1 { width: 600px; height: 600px; background: #3b5bff; top: -200px; left: -200px; }
   .blob2 { width: 500px; height: 500px; background: #7c3aed; bottom: -150px; right: -150px; }
 
+  .game-explanation {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 4px;
+    font-style: italic;
+    line-height: 1.4;
+    white-space: normal;
+  }
+
   .screen {
     position: relative;
     z-index: 1;
@@ -519,6 +528,7 @@
         <div class="rank">${String(i + 1).padStart(2, '0')}</div>
         <div class="game-info">
           <div class="game-name">${rec.game}</div>
+          ${rec.explanation ? `<div class="game-explanation">${rec.explanation}</div>` : ''}
           <div class="game-score-label">Match score</div>
         </div>
         <div class="score-bar-wrap">

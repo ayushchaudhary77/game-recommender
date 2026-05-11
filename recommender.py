@@ -92,6 +92,25 @@ user_item_matrix = csr_matrix(
 item_similarity = cosine_similarity(user_item_matrix.T)
 item_similarity.shape
 
+def generate_explanation(recommended_game, matched_games, top_tags):
+    print(f"Generating explanation for {recommended_game}...")
+    try:
+        prompt = f"""
+        A user who plays {', '.join(matched_games)} was recommended '{recommended_game}'.
+        Shared gameplay tags: {', '.join(top_tags)}.
+        Write ONE friendly sentence under 20 words explaining why this game was recommended.
+        Return only the sentence, nothing else.
+        """
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=60,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return message.content[0].text.strip()
+    except Exception as e:
+        print(f"Explanation error: {e}")
+        return ""
+
 def recommend_for_steam_user(steam_games, top_n=5):
     user_vector = build_user_vector_from_steam(steam_games)
     rated_items = np.where(user_vector > 0)[0]

@@ -7,6 +7,7 @@ import pandas as pd
 import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 import requests
+import math
 import os
 import anthropic 
 from dotenv import load_dotenv
@@ -23,6 +24,8 @@ def normalize(name):
 df = pd.read_csv("hybrid_training_dataset.csv")
 print(df.head())
 print(df.info())
+
+df = df[df['combined_tags'] != 'unknown'] 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 csv_path = os.path.join(BASE_DIR, "hybrid_training_dataset.csv")
@@ -120,6 +123,16 @@ def recommend_for_steam_user(steam_games, top_n=5):
         return get_popular_steam_games(top_n)
 
     matched_titles = [idx_to_game[i] for i in rated_items]
+    important_tags = {
+    "tactical",
+    "fps",
+    "team_based",
+    "competitive",
+    "shooter",
+    "heist",
+    "realistic",
+    "military"
+    }
     print(f"Matched {len(matched_titles)} games: {matched_titles}")
 
     if len(rated_items) == 0:
@@ -144,14 +157,20 @@ def recommend_for_steam_user(steam_games, top_n=5):
     final_scores = np.zeros(num_items)
     for iidx in range(num_items):
         game = idx_to_game[iidx]
+    
         n = normalize(game)
+
         cf = float(cf_scores[iidx]) if cf_scores[iidx] != -np.inf else 0.0
         cb = 0.0
         if n in content_game_to_idx:
             c_idx = content_game_to_idx[n]
+            tags = set(df_content.iloc[c_idx]['combined_tags'].split())
+            overlap = len(tags.intersection(important_tags))
+            if overlap < 2:
+                continue
             if c_idx < len(content_scores):  # bounds check
                 cb = float(content_scores[c_idx])
-        final_scores[iidx] = 0.4 * cf + 0.6 * cb
+        final_scores[iidx] = 0.8 * cf + 0.2 * cb
 
     final_scores[rated_items] = -np.inf
     top_idx = np.argsort(final_scores)[-top_n:][::-1]
@@ -313,22 +332,40 @@ def build_user_vector_from_steam(steam_games):
     user_vector = np.zeros(num_items)
     matched = []
 
+    print("Full Steam library received:")
+    for game in steam_games:
+        print(f"  {game.get('name')} - {game.get('playtime_forever')} mins")
+
+    # Match games existing in dataset
     for game in steam_games:
         name = normalize(game.get("name", ""))
         playtime = game.get("playtime_forever", 0)
+
         if name in game_to_idx_lower and playtime > 0:
             matched.append((name, playtime, game_to_idx_lower[name]))
 
     if not matched:
         return user_vector
 
-    # Scale playtime relatively across matched games (1–10)
-    max_playtime = max(p for _, p, _ in matched)
+    # Find maximum playtime for normalization
+    max_log = math.log(max(p for _, p, _ in matched) + 1)
+
+    filtered_count = 0
 
     for name, playtime, idx in matched:
-        rating = max(1, round((playtime / max_playtime) * 10))
-        user_vector[idx] = rating
-        print(f"  {name}: {playtime} mins -> rating {rating}")
+        log_playtime = math.log(playtime + 1)
+
+        rating = max(1, round((log_playtime / max_log) * 10))
+
+        # ONLY keep games with rating >= 8
+        if rating >= 8:
+            user_vector[idx] = rating
+            filtered_count += 1
+            print(f"  INCLUDED -> {name}: {playtime} mins -> rating {rating}")
+        else:
+            print(f"  EXCLUDED -> {name}: {playtime} mins -> rating {rating}")
+
+    print(f"Total filtered matched games: {filtered_count}")
 
     return user_vector
 
@@ -383,7 +420,7 @@ def recommend_by_genre(steam_games, selected_genres, top_n=5):
             c_idx = content_game_to_idx[n]
             if c_idx < len(content_scores):
                 cb = float(content_scores[c_idx])
-        final_scores[iidx] = 0.4 * cf + 0.6 * cb
+        final_scores[iidx] = 0.8 * cf + 0.2 * cb
 
     final_scores[rated_items] = -np.inf
     top_idx = np.argsort(final_scores)[-top_n:][::-1]

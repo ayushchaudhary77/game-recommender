@@ -107,6 +107,7 @@ def check_steam_profile_access(steam_id):
     url = (
         "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
         f"?key={"5C7745FC550805A4DF119BF09307FE6F"}&steamid={steam_id}&include_appinfo=true"
+        "&include_played_free_games=true"
     )
 
     response = requests.get(url).json()

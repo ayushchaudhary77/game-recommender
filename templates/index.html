@@ -138,6 +138,34 @@
   .steam-btn:active { transform: translateY(0); }
   .steam-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
 
+  .filter-btn {
+    padding: 6px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    letter-spacing: 0.02em;
+  }
+
+.filter-btn:hover {
+    border-color: rgba(91,140,255,0.4);
+    color: var(--text);
+    background: rgba(91,140,255,0.08);
+  }
+
+.filter-btn.selected {
+    background: rgba(91,140,255,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 12px rgba(91,140,255,0.15);
+  }
+
   .features {
     display: flex;
     gap: 1.5rem;
@@ -247,6 +275,32 @@
     box-shadow: 0 0 6px #4ade80;
   }
 
+  .game-tags {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 5px;
+  }
+
+.game-tags-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    opacity: 0.6;
+    margin-right: 2px;
+  }
+
+.game-tag {
+    padding: 2px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    text-transform: capitalize;
+  }
+
   .game-list { display: flex; flex-direction: column; gap: 12px; }
 
   .game-card {
@@ -295,6 +349,7 @@
     transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .score-val { font-size: 0.78rem; color: var(--muted); text-align: right; }
+  .score-bar-wrap .game-score-label { text-align: right; margin-top: 2px; }
 
   .refresh-btn {
     align-self: center;
@@ -455,6 +510,7 @@
     {% endif %}
   </div>
 
+
   <div class="game-list" id="game-list"></div>
   <div class="error-box" id="results-error"></div>
 
@@ -509,6 +565,61 @@
     box.style.display = 'block';
   }
 
+  let selectedGenres = [];
+
+function toggleGenre(genre, btn) {
+    if (selectedGenres.includes(genre)) {
+        selectedGenres = selectedGenres.filter(g => g !== genre);
+        btn.classList.remove('selected');
+    } else {
+        selectedGenres.push(genre);
+        btn.classList.add('selected');
+    }
+
+    // Show/hide apply button
+    const applyBtn = document.getElementById('apply-filter-btn');
+    if (selectedGenres.length > 0) {
+        applyBtn.classList.add('visible');
+    } else {
+        applyBtn.classList.remove('visible');
+    }
+}
+
+async function applyGenreFilter() {
+    if (selectedGenres.length === 0) return;
+
+    const applyBtn = document.getElementById('apply-filter-btn');
+    applyBtn.textContent = 'Finding...';
+    applyBtn.disabled = true;
+
+    try {
+        const res = await fetch('/recommend-by-genre', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ genres: selectedGenres })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            showError(data.error || 'Filter failed.');
+            return;
+        }
+
+        // Clear current list and render new results
+        document.getElementById('game-list').innerHTML = '';
+        document.querySelector('.results-header h1').innerHTML =
+            'Filtered by<br/><span>' + selectedGenres.map(g => g.replace('_', ' ')).join(', ') + '</span>';
+
+        renderResults(data.recommendations);
+
+    } catch (e) {
+        showError('Filter failed. Please try again.');
+    } finally {
+        applyBtn.textContent = 'Get Recommendations →';
+        applyBtn.disabled = false;
+    }
+}
+
   function renderResults(recs) {
     const isColdStart = recs.some(r => r.cold_start);
     if (isColdStart) {
@@ -525,17 +636,25 @@
       card.className = 'game-card';
       card.style.animationDelay = (i * 0.08) + 's';
       card.innerHTML = `
-        <div class="rank">${String(i + 1).padStart(2, '0')}</div>
-        <div class="game-info">
-          <div class="game-name">${rec.game}</div>
-          ${rec.explanation ? `<div class="game-explanation">${rec.explanation}</div>` : ''}
-          <div class="game-score-label">Match score</div>
-        </div>
-        <div class="score-bar-wrap">
-          <div class="score-bar-bg"><div class="score-bar-fill" data-pct="${pct}"></div></div>
-          <div class="score-val">${rec.score.toFixed(2)}</div>
-        </div>
-      `;
+          <div class="rank">${String(i + 1).padStart(2, '0')}</div>
+          <div class="game-info">
+              <div class="game-name">${rec.game}</div>
+              ${rec.explanation ? `<div class="game-explanation">${rec.explanation}</div>` : ''}
+              <div class="game-tags">
+                  ${rec.tags && rec.tags.length > 0 ? 
+                      `<span class="game-tags-label">Tags:</span>` + 
+                      rec.tags.slice(0, 3).map(t => 
+                          `<span class="game-tag">${t.replace(/_/g,' ')}</span>`
+                      ).join('') 
+                  : ''}
+              </div>
+          </div>
+          <div class="score-bar-wrap">
+              <div class="score-bar-bg"><div class="score-bar-fill" data-pct="${pct}"></div></div>
+              <div class="score-val">${rec.score.toFixed(4)}</div>
+              <div class="game-score-label">Match score</div>
+          </div>
+        `;
       list.appendChild(card);
     });
 

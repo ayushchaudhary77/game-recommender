@@ -156,6 +156,34 @@ def recommend_for_steam_user(steam_games, top_n=5):
     final_scores[rated_items] = -np.inf
     top_idx = np.argsort(final_scores)[-top_n:][::-1]
 
+    results = []
+
+    for i in top_idx:
+        game = idx_to_game[i]
+        n = normalize(game)
+
+        game_tags_list = []
+
+        if n in content_game_to_idx:
+            c_idx = content_game_to_idx[n]
+            game_tags_list = df_content.iloc[c_idx]['combined_tags'].split()
+
+    # Generate explanation immediately
+        explanation = generate_explanation(
+            game,
+            matched_titles,
+            game_tags_list[:3]
+        )
+
+        results.append({
+            "game": game,
+            "score": round(float(final_scores[i]), 4),
+            "tags": game_tags_list,
+            "explanation": explanation
+        })
+
+    return results       
+
     print("Final scores:", [round(final_scores[i], 4) for i in top_idx])
 
     return [
@@ -303,6 +331,87 @@ def build_user_vector_from_steam(steam_games):
         print(f"  {name}: {playtime} mins -> rating {rating}")
 
     return user_vector
+
+def recommend_by_genre(steam_games, selected_genres, top_n=5):
+    user_vector = build_user_vector_from_steam(steam_games)
+    rated_items = np.where(user_vector > 0)[0]
+
+    if len(rated_items) == 0:
+        # Fall back to content search using selected genres
+        query_vec = tfidf.transform([' '.join(selected_genres)])
+        scores = cosine_similarity(query_vec, tfidf_matrix).flatten()
+        top_idx = np.argsort(scores)[-top_n:][::-1]
+        return [
+            {"game": content_idx_to_game[i], "score": round(float(scores[i]), 4), "tags": df_content.iloc[i]['combined_tags'].split()}
+            for i in top_idx
+        ]
+
+    matched_titles = [idx_to_game[i] for i in rated_items]
+
+    # CF scores
+    cf_scores = item_similarity[:, rated_items].dot(user_vector[rated_items])
+    sim_sums = np.abs(item_similarity[:, rated_items]).sum(axis=1)
+    cf_scores = cf_scores / np.maximum(sim_sums, 1e-8)
+    cf_scores[rated_items] = -np.inf
+
+    # Content scores
+    content_scores = np.zeros(len(df_content))
+    for title in matched_titles:
+        n = normalize(title)
+        if n in content_game_to_idx:
+            idx = content_game_to_idx[n]
+            sims = cosine_similarity(tfidf_matrix[idx], tfidf_matrix).flatten()
+            content_scores += sims
+
+    # Build final scores but ONLY for games that contain ALL selected genres
+    final_scores = np.full(num_items, -np.inf)
+    for iidx in range(num_items):
+        game = idx_to_game[iidx]
+        n = normalize(game)
+
+        # Check if this game has the selected genres in its tags
+        if n in content_game_to_idx:
+            c_idx = content_game_to_idx[n]
+            game_tags = df_content.iloc[c_idx]['combined_tags'].lower()
+            # Game must contain at least one of the selected genres
+            if not any(genre.lower() in game_tags for genre in selected_genres):
+                continue  # skip this game
+
+        cf = float(cf_scores[iidx]) if cf_scores[iidx] != -np.inf else 0.0
+        cb = 0.0
+        if n in content_game_to_idx:
+            c_idx = content_game_to_idx[n]
+            if c_idx < len(content_scores):
+                cb = float(content_scores[c_idx])
+        final_scores[iidx] = 0.4 * cf + 0.6 * cb
+
+    final_scores[rated_items] = -np.inf
+    top_idx = np.argsort(final_scores)[-top_n:][::-1]
+    top_idx = [i for i in top_idx if final_scores[i] != -np.inf]
+
+    if not top_idx:
+        return []
+
+    results = []
+    for i in top_idx:
+        game = idx_to_game[i]
+        n = normalize(game)
+        game_tags_list = []
+        if n in content_game_to_idx:
+            c_idx = content_game_to_idx[n]
+            game_tags_list = df_content.iloc[c_idx]['combined_tags'].split()
+
+        explanation = generate_explanation(game, matched_titles, game_tags_list[:3])
+        results.append({
+            "game": game,
+            "score": round(float(final_scores[i]), 4),
+            "tags": game_tags_list,
+            "explanation": explanation
+        })
+
+    return results
+
+
 
 def generate_explanation(recommended_game, matched_games, top_tags):
     try:

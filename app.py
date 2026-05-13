@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template
-from recommender import get_recommendations, recommend_for_steam_user, get_popular_steam_games, nl_search
+from recommender import get_recommendations, recommend_for_steam_user, get_popular_steam_games, nl_search, recommend_by_genre
+
 from flask import redirect, request, session
 import os
 import requests
@@ -50,6 +51,22 @@ def natural_language_search():
     
     results = nl_search(query)
     return jsonify({"recommendations": results})
+
+@app.route("/recommend-by-genre", methods=["POST"])
+def recommend_by_genre_route():
+    steam_id = session.get("steam_id")
+    if not steam_id:
+        return jsonify({"error": "Not logged in"}), 401
+
+    selected_genres = request.json.get("genres", [])
+    if not selected_genres:
+        return jsonify({"error": "No genres selected"}), 400
+
+    is_public, result = check_steam_profile_access(steam_id)
+    steam_games = result if is_public else []
+
+    recs = recommend_by_genre(steam_games, selected_genres, top_n=5)
+    return jsonify({"recommendations": recs})
 
 
 def get_steam_games(steam_id):
